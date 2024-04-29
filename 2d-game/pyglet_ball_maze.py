@@ -154,9 +154,7 @@ class Ball:
     def adjust_ball_movement(self, line):
         if(line.x == line.x2): #vertical line
             #check if ball is in width of line
-            #if((min(line.y, line.y2) - self.ball.radius < self.ball.y < max(line.y, line.y2) + self.ball.radius)):
-            if((min(line.y, line.y2) < self.ball.y < max(line.y, line.y2))):
-               #or (min(line.y, line.y2) - self.ball.radius < self.ball.y + self.y_movement < max(line.y, line.y2) + self.ball.radius)):
+            if((min(line.y, line.y2) - self.ball.radius < self.ball.y < max(line.y, line.y2) + self.ball.radius)):
                 if(self.x_movement > 0):
                     if(self.ball.x + self.ball.radius < line.x < self.ball.x + self.ball.radius + self.x_movement): 
                         #ball crosses line from left
@@ -167,11 +165,14 @@ class Ball:
                         #ball crosses line from right
                         self.ball.x = line.x + self.ball.radius + 1 
                         self.x_movement = 0
+            if(self.ball.x - self.ball.radius < line.x < self.ball.x + self.ball.radius): #ball in width of line
+                if((measure_distance(line.x, line.y, self.ball.x + self.x_movement, self.ball.y + self.y_movement) < self.ball.radius)
+                   or (measure_distance(line.x2, line.y2, self.ball.x + self.x_movement, self.ball.y + self.y_movement) < self.ball.radius)):
+                    #ball would cross line end
+                    self.y_movement = 0 
         if(line.y == line.y2): #horizontal line
             #check if ball is in width of line
-            #if((min(line.x, line.x2) - self.ball.radius < self.ball.x < max(line.x, line.x2) + self.ball.radius)):
-            if((min(line.x, line.x2) < self.ball.x < max(line.x, line.x2))):
-               #or (min(line.x, line.x2) - self.ball.radius < self.ball.x + self.x_movement < max(line.x, line.x2) + self.ball.radius)):
+            if((min(line.x, line.x2) - self.ball.radius < self.ball.x < max(line.x, line.x2) + self.ball.radius)):
                 if(self.y_movement > 0):
                     if(self.ball.y + self.ball.radius < line.y < self.ball.y + self.ball.radius + self.y_movement): 
                         #ball crosses line from underneath
@@ -182,10 +183,11 @@ class Ball:
                         #ball crosses line from above
                         self.ball.y = line.y + self.ball.radius + 1 
                         self.y_movement = 0
-        if((measure_distance(line.x, line.y, self.ball.x + self.x_movement, self.ball.y + self.y_movement) < self.ball.radius)
-           or (measure_distance(line.x2, line.y2, self.ball.x + self.x_movement, self.ball.y + self.y_movement) < self.ball.radius)):
-            self.x_movement = 0
-            self.y_movement = 0
+            if(self.ball.y - self.ball.radius < line.y < self.ball.y + self.ball.radius): #ball in height of line
+                if((measure_distance(line.x, line.y, self.ball.x + self.x_movement, self.ball.y + self.y_movement) < self.ball.radius)
+                   or (measure_distance(line.x2, line.y2, self.ball.x + self.x_movement, self.ball.y + self.y_movement) < self.ball.radius)):
+                    #ball would cross line end
+                    self.x_movement = 0 
 
     def draw(self):
         self.ball.draw()
