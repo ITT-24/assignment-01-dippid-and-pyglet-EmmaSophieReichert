@@ -12,6 +12,8 @@ WINDOW_HEIGHT = 600
 PORT = 5700
 sensor = SensorUDP(PORT)
 
+BALL_SPEED = 3 #adjust to make game easier or harder
+
 window = pyglet.window.Window(WINDOW_WIDTH, WINDOW_HEIGHT)
 #https://stackoverflow.com/a/42481452
 pyglet.gl.glClearColor(0.62,0.79,0.49,1)
@@ -231,8 +233,8 @@ def on_draw():
         text_finish.draw()
 
 def handle_angle(data):
-    ball.x_movement = data.get("pitch")
-    ball.y_movement = -data.get("roll")
+    ball.x_movement = data.get("pitch") * BALL_SPEED
+    ball.y_movement = -data.get("roll") * BALL_SPEED
     ball.move()
 
 sensor.register_callback('rotation', handle_angle)

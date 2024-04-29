@@ -13,4 +13,4 @@ Die Idee war hierbei, ein einfaches Kugellabyrinth nachzubauen, in dem eine Kuge
 
 <img width="712" alt="Bildschirmfoto 2024-04-29 um 14 09 19" src="https://github.com/ITT-24/assignment-01-dippid-and-pyglet-EmmaSophieReichert/assets/76169608/66a055d7-40ec-4638-a2b4-860ef466fb94">
 
-Die größte Schwierigkeit war hierbei die Kollision mit den Wänden (Linien) zu implementieren. Es wurden als kleiner Bonus auch Sounds fürs ins Wasser fallen und gewinnen eingebaut.
+Die größte Schwierigkeit war hierbei die Kollision mit den Wänden (Linien) zu implementieren. Es wurden als kleiner Bonus auch Sounds fürs ins Wasser fallen und gewinnen eingebaut (Quelle: ZapSplat).
