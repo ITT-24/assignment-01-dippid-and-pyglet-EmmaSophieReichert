@@ -1,5 +1,5 @@
 import pyglet
-from pyglet import shapes, clock
+from pyglet import shapes, clock, text
 import random
 import time
 import numpy as np
@@ -14,7 +14,7 @@ sensor = SensorUDP(PORT)
 
 window = pyglet.window.Window(WINDOW_WIDTH, WINDOW_HEIGHT)
 #https://stackoverflow.com/a/42481452
-pyglet.gl.glClearColor(0.9,0.9,1,1)
+pyglet.gl.glClearColor(0.62,0.79,0.49,1)
 
 #https://pyglet.readthedocs.io/en/latest/modules/shapes.html
 batch = pyglet.graphics.Batch()
@@ -99,20 +99,36 @@ hole_coords = [
 
 labyrinth_lines = []
 for x1, y1, x2, y2 in labyrinth_line_coords:
-    line = shapes.Line(x1, y1, x2, y2, width = 2, color=(0, 0, 0), batch = batch)
+    line = shapes.Line(x1, y1, x2, y2, width = 2, color=(95, 120, 74), batch = batch)
     labyrinth_lines.append(line)
 
 holes = []
 for x, y in hole_coords:
-    hole = shapes.Circle(x, y, radius = 20, color=(0, 0, 200, 100), batch = batch)
+    hole = shapes.Circle(x, y, radius = 20, color=(94, 172, 204, 200), batch = batch)
     holes.append(hole)
 
 start_point = (50, 50)
-finish_rect = shapes.Rectangle(500, 0, 100, 100, color=(0, 0, 100, 100), batch = batch)
+finish_rect = shapes.Rectangle(500, 0, 100, 100, color=(101, 100, 100, 100), batch = batch)
+
+text_finish = pyglet.text.HTMLLabel('YOU WIN',
+                                    x=window.width//2, y=window.height//2,
+                                    anchor_x='center', anchor_y='center')
+text_finish.set_style('color', (0, 0, 0, 255))
+text_finish.set_style('bold', True)
+text_finish.set_style('font_name', 'Courier New')
+text_finish.set_style('font_size', 80) 
+
+draw_text = False
+
+#from lecture: pyglet_click.py
+def measure_distance(x1, y1, x2, y2):
+    distance = np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+    return distance
+    
 
 class Ball:
     def __init__(self):
-        self.ball = shapes.Circle(50, 50, radius=10, color=(0, 0, 255))
+        self.ball = shapes.Circle(50, 50, radius=10, color=(102, 51, 0))
         self.x_movement = 0
         self.y_movement = 0     
 
@@ -122,20 +138,25 @@ class Ball:
         self.ball.y = self.ball.y + self.y_movement
         self.ball.x = self.ball.x + self.x_movement
         self.check_ball_in_hole()
+        self.check_ball_outside_window()
+        self.check_game_finish()
+
+    def check_ball_outside_window(self):
         if(self.ball.y < self.ball.radius):
             self.ball.y = self.ball.radius
-        elif(self.ball.x < self.ball.radius):
+        if(self.ball.x < self.ball.radius):
             self.ball.x = self.ball.radius
-        elif(self.ball.y > window.height - self.ball.radius):
+        if(self.ball.y > window.height - self.ball.radius):
             self.ball.y = window.height - self.ball.radius
-        elif(self.ball.x > window.width - self.ball.radius):
+        if(self.ball.x > window.width - self.ball.radius):
             self.ball.x = window.width - self.ball.radius
     
     def adjust_ball_movement(self, line):
-        if line.x == line.x2: #vertical line
+        if(line.x == line.x2): #vertical line
             #check if ball is in width of line
-            if((min(line.y, line.y2) - self.ball.radius < self.ball.y < max(line.y, line.y2) + self.ball.radius) 
-               or (min(line.y, line.y2) - self.ball.radius < self.ball.y + self.y_movement < max(line.y, line.y2) + self.ball.radius)):
+            #if((min(line.y, line.y2) - self.ball.radius < self.ball.y < max(line.y, line.y2) + self.ball.radius)):
+            if((min(line.y, line.y2) < self.ball.y < max(line.y, line.y2))):
+               #or (min(line.y, line.y2) - self.ball.radius < self.ball.y + self.y_movement < max(line.y, line.y2) + self.ball.radius)):
                 if(self.x_movement > 0):
                     if(self.ball.x + self.ball.radius < line.x < self.ball.x + self.ball.radius + self.x_movement): 
                         #ball crosses line from left
@@ -146,10 +167,11 @@ class Ball:
                         #ball crosses line from right
                         self.ball.x = line.x + self.ball.radius + 1 
                         self.x_movement = 0
-        if line.y == line.y2: #horizontal line
+        if(line.y == line.y2): #horizontal line
             #check if ball is in width of line
-            if((min(line.x, line.x2) - self.ball.radius < self.ball.x < max(line.x, line.x2) + self.ball.radius) 
-               or (min(line.x, line.x2) - self.ball.radius < self.ball.x + self.x_movement < max(line.x, line.x2) + self.ball.radius)):
+            #if((min(line.x, line.x2) - self.ball.radius < self.ball.x < max(line.x, line.x2) + self.ball.radius)):
+            if((min(line.x, line.x2) < self.ball.x < max(line.x, line.x2))):
+               #or (min(line.x, line.x2) - self.ball.radius < self.ball.x + self.x_movement < max(line.x, line.x2) + self.ball.radius)):
                 if(self.y_movement > 0):
                     if(self.ball.y + self.ball.radius < line.y < self.ball.y + self.ball.radius + self.y_movement): 
                         #ball crosses line from underneath
@@ -160,6 +182,10 @@ class Ball:
                         #ball crosses line from above
                         self.ball.y = line.y + self.ball.radius + 1 
                         self.y_movement = 0
+        if((measure_distance(line.x, line.y, self.ball.x + self.x_movement, self.ball.y + self.y_movement) < self.ball.radius)
+           or (measure_distance(line.x2, line.y2, self.ball.x + self.x_movement, self.ball.y + self.y_movement) < self.ball.radius)):
+            self.x_movement = 0
+            self.y_movement = 0
 
     def draw(self):
         self.ball.draw()
@@ -170,11 +196,13 @@ class Ball:
                 self.ball.position = start_point
 
     def check_game_finish(self):
-        print()
+        global draw_text
+        if((finish_rect.x <= self.ball.x <= finish_rect.x + finish_rect.width)
+           and (finish_rect.y <= self.ball.y <= finish_rect.y + finish_rect.height)):
+            draw_text = True
+        else: draw_text = False
 
 ball = Ball()
-
-
 
 @window.event
 def on_key_press(symbol, modifiers):
@@ -186,6 +214,8 @@ def on_draw():
     window.clear()
     ball.draw()
     batch.draw()
+    if(draw_text):
+        text_finish.draw()
 
 def handle_angle(data):
     ball.x_movement = data.get("pitch")
