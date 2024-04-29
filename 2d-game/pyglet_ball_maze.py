@@ -16,6 +16,13 @@ window = pyglet.window.Window(WINDOW_WIDTH, WINDOW_HEIGHT)
 #https://stackoverflow.com/a/42481452
 pyglet.gl.glClearColor(0.62,0.79,0.49,1)
 
+#https://pyglet.readthedocs.io/en/latest/programming_guide/media.html#
+#https://www.zapsplat.com/music/object-drop-in-bath-water-splash/
+sound_water = pyglet.media.load('sounds/water.mp3', streaming=False)
+#https://www.zapsplat.com/music/game-tone-bright-and-positive-musical-tone-good-for-winning-award-or-point-or-success-version-1/
+sound_win = pyglet.media.load('sounds/win.mp3', streaming=False)
+player = pyglet.media.Player()
+
 #https://pyglet.readthedocs.io/en/latest/modules/shapes.html
 batch = pyglet.graphics.Batch()
 
@@ -125,7 +132,6 @@ def measure_distance(x1, y1, x2, y2):
     distance = np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
     return distance
     
-
 class Ball:
     def __init__(self):
         self.ball = shapes.Circle(50, 50, radius=10, color=(102, 51, 0))
@@ -195,13 +201,18 @@ class Ball:
     def check_ball_in_hole(self):
         for hole in holes:
             if(abs(self.ball.x - hole.x) < hole.radius and abs(self.ball.y - hole.y) < hole.radius):
+                player.queue(sound_water)
+                player.play()
                 self.ball.position = start_point
 
     def check_game_finish(self):
         global draw_text
         if((finish_rect.x <= self.ball.x <= finish_rect.x + finish_rect.width)
            and (finish_rect.y <= self.ball.y <= finish_rect.y + finish_rect.height)):
-            draw_text = True
+            if(not draw_text): #only play on first entering
+                player.queue(sound_win)
+                player.play()
+                draw_text = True
         else: draw_text = False
 
 ball = Ball()
